@@ -14,8 +14,16 @@
 #define LOOKUP8(tbl, offset) tbl[offset]
 #define LOOKUP16(tbl, offset) tbl[offset]
 
-#define MAP_X (uint8_t) 32
+// The datatype used to restore map (g_map)
+#define MAP_ELEMENT_SIZE 3  // 2^3 = 8, for uint8_t
+//#define MAP_ELEMENT_SIZE 5  // 2^5 = 32, for uint32_t
+
+// Map mask for obtaining bits in x axis
+#define MAP_ELEMENT_MASK ((1 << MAP_ELEMENT_SIZE) - 1)
+
 #define MAP_XS (uint8_t) 5
+// Map x direction size (number of bits)
+#define MAP_X (uint8_t)(2 << MAP_XS)
 #define MAP_Y (uint8_t) 32
 #define INV_FACTOR_INT ((uint16_t)(SCREEN_WIDTH * 75))
 #define MIN_DIST (int) ((150 * ((float) SCREEN_WIDTH / (float) SCREEN_HEIGHT)))

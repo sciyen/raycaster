@@ -15,16 +15,18 @@ bool RayCasterFloat::IsWall(float rayX, float rayY)
     if (tileX < 0 || tileY < 0 || tileX >= MAP_X - 1 || tileY >= MAP_Y - 1) {
         return true;
     }
-    return g_map[(tileX >> 3) + (tileY << (MAP_XS - 3))] &
-           (1 << (8 - (tileX & 0x7)));
+    return g_map[(tileX >> MAP_ELEMENT_SIZE) +
+                 (tileY << (MAP_XS - MAP_ELEMENT_SIZE))] &
+           (1 << (MAP_ELEMENT_MASK - (tileX & MAP_ELEMENT_MASK)));
 }
 
-float RayCasterFloat::Distance(float playerX,
-                               float playerY,
-                               float rayA,
-                               float *hitOffset,
-                               int *hitDirection)
+float RayCasterFloat::Distance(float playerX,      // In, Player location X
+                               float playerY,      // In, Player location Y
+                               float rayA,         // In, Player location Angle
+                               float *hitOffset,   // Out,
+                               int *hitDirection)  // Out,
 {
+    // Player location angle normalizarion
     while (rayA < 0) {
         rayA += 2.0f * M_PI;
     }
@@ -36,6 +38,8 @@ float RayCasterFloat::Distance(float playerX,
     int tileStepY = 1;
     float tileX = 0;
     float tileY = 0;
+
+    // Generate directional unit vector according to player angle
     if (rayA > M_PI) {
         tileStepX = -1;
     }
@@ -43,6 +47,8 @@ float RayCasterFloat::Distance(float playerX,
         tileStepY = -1;
     }
 
+    // Split the player location into fractional part(offset) and
+    // integer part(tile).
     float rayX = playerX;
     float rayY = playerY;
     float offsetX = modff(rayX, &tileX);
