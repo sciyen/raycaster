@@ -14,6 +14,9 @@
 #define LOOKUP8(tbl, offset) tbl[offset]
 #define LOOKUP16(tbl, offset) tbl[offset]
 
+#define TEXTURE_XS 6
+#define TEXTURE_SIZE (uint16_t)(1 << TEXTURE_XS)  // 2^6
+
 // The datatype used to restore map (g_map)
 #define MAP_ELEMENT_SIZE 3  // 2^3 = 8, for uint8_t
 //#define MAP_ELEMENT_SIZE 5  // 2^5 = 32, for uint32_t

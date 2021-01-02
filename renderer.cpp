@@ -34,7 +34,8 @@ void Renderer::TraceFrame(Game *g, uint32_t *fb)
 
         for (int y = 0; y < sso * 2; y++) {
             // paint texture pixel
-            auto ty = static_cast<int>(to >> 10);
+            uint16_t ty =
+                (tso + (((TEXTURE_SIZE / 2) << 10) - tso) * y / sso) >> 10;
             auto tv = g_texture8[(ty << 6) + tx];
 
             to += ts;
