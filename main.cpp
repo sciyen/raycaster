@@ -63,6 +63,29 @@ static bool ProcessEvent(const SDL_Event &event,
     }
     return false;
 }
+
+void printPerformanceInfo(float floatRenderSec,
+                          float fixedRenderSec,
+                          float overallSec)
+{
+    const float smoothFactor = 0.95f;
+    static auto lastPrintTick = SDL_GetPerformanceCounter();
+    static float floatRC = floatRenderSec;
+    static float fixedRC = fixedRenderSec;
+    static float overRC = overallSec;
+    auto currentTick = SDL_GetPerformanceCounter();
+    const static auto tickFrequency = SDL_GetPerformanceFrequency();
+    floatRC = smoothFactor * floatRC + (1 - smoothFactor) * floatRenderSec;
+    fixedRC = smoothFactor * fixedRC + (1 - smoothFactor) * fixedRenderSec;
+    overRC = smoothFactor * overRC + (1 - smoothFactor) * overallSec;
+    if ((currentTick - lastPrintTick) / static_cast<float>(tickFrequency) >
+        0.2f) {
+        printf("fixed: %.6f(s), float: %.6f(s), FPS: %.6f(s)\n", fixedRC,
+               floatRC, 1 / overRC);
+        lastPrintTick = currentTick;
+    }
+}
+
 int main(int argc, char *args[])
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -102,8 +125,21 @@ int main(int argc, char *args[])
                 SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 
             while (!isExiting) {
+                /* Float point render start */
+                const auto renderFloatTickStart = SDL_GetPerformanceCounter();
                 floatRenderer.TraceFrame(&game, floatBuffer);
+                const auto renderFloatTickEnd = SDL_GetPerformanceCounter();
+                const auto floatRenderSeconds =
+                    (renderFloatTickEnd - renderFloatTickStart) /
+                    static_cast<float>(tickFrequency);
+
+                /* Fixed point render start */
+                const auto renderFixedTickStart = SDL_GetPerformanceCounter();
                 fixedRenderer.TraceFrame(&game, fixedBuffer);
+                const auto renderFixedTickEnd = SDL_GetPerformanceCounter();
+                const auto fixedRenderSeconds =
+                    (renderFixedTickEnd - renderFixedTickStart) /
+                    static_cast<float>(tickFrequency);
 
                 DrawBuffer(sdlRenderer, fixedTexture, fixedBuffer, 0);
                 DrawBuffer(sdlRenderer, floatTexture, floatBuffer,
@@ -115,11 +151,15 @@ int main(int argc, char *args[])
                     isExiting =
                         ProcessEvent(event, &moveDirection, &rotateDirection);
                 }
+
+                /* Calculating the overall performance */
                 const auto nextCounter = SDL_GetPerformanceCounter();
                 const auto seconds = (nextCounter - tickCounter) /
                                      static_cast<float>(tickFrequency);
                 tickCounter = nextCounter;
                 game.Move(moveDirection, rotateDirection, seconds);
+                printPerformanceInfo(floatRenderSeconds, fixedRenderSeconds,
+                                     seconds);
             }
             SDL_DestroyTexture(floatTexture);
             SDL_DestroyTexture(fixedTexture);
