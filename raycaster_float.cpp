@@ -34,56 +34,33 @@ float RayCasterFloat::Distance(float playerX,      // In, Player location X
         rayA -= 2.0f * M_PI;
     }
 
-    int tileStepX = 1;
-    int tileStepY = 1;
-    float tileX = 0;
-    float tileY = 0;
-
-    // Generate directional unit vector according to player angle
-    if (rayA > M_PI) {
-        tileStepX = -1;
-    }
-    if (rayA > M_PI_2 && rayA < 3 * M_PI_2) {
-        tileStepY = -1;
-    }
-
     // Split the player location into fractional part(offset) and
     // integer part(tile).
     float rayX = playerX;
     float rayY = playerY;
+    float tileX = 0;
+    float tileY = 0;
     float offsetX = modff(rayX, &tileX);
     float offsetY = modff(rayY, &tileY);
 
-    float startDeltaX, startDeltaY;
-    if (rayA <= M_PI_2) {
-        startDeltaX = (1 - offsetY) * tan(rayA);
-        startDeltaY = (1 - offsetX) / tan(rayA);
-    } else if (rayA <= M_PI) {
-        if (offsetY == 0) {
-            startDeltaX = (1) * fabs(tan(rayA));
-        } else {
-            startDeltaX = (offsetY) *fabs(tan(rayA));
-        }
-        startDeltaY = -(1 - offsetX) / fabs(tan(rayA));
-    } else if (rayA < 3 * M_PI_2) {
-        if (offsetY == 0) {
-            startDeltaX = -(1) * fabs(tan(rayA));
-        } else {
-            startDeltaX = -(offsetY) *fabs(tan(rayA));
-        }
-        if (offsetX == 0) {
-            startDeltaY = -(1) / fabs(tan(rayA));
-        } else {
-            startDeltaY = -(offsetX) / fabs(tan(rayA));
-        }
-    } else {
-        startDeltaX = -(1 - offsetY) * fabs(tan(rayA));
-        if (offsetX == 0) {
-            startDeltaY = (1) / fabs(tan(rayA));
-        } else {
-            startDeltaY = (offsetX) / fabs(tan(rayA));
-        }
+    float vecX = 1 - offsetY;  // The case that 3pi/2 ~ pi/2
+    float vecY = 1 - offsetX;  // The case that 0 ~ pi
+    int tileStepX = 1;         // The case that 0 ~ pi
+    int tileStepY = 1;         // The case that 3pi/2 ~ pi/2
+
+    // Generate directional unit vector according to player angle
+    if (rayA > M_PI) {
+        tileStepX = -1;
+        vecY = (offsetX == 0) ? 1 : offsetX;
     }
+    if (rayA > M_PI_2 && rayA < 3 * M_PI_2) {
+        tileStepY = -1;
+        vecX = (offsetY == 0) ? 1 : offsetY;
+    }
+
+    // Calculate the starting delta
+    float startDeltaX = vecX * tan(rayA) * tileStepY;
+    float startDeltaY = vecY / tan(rayA) * tileStepX;
 
     float interceptX = rayX + startDeltaX;
     float interceptY = rayY + startDeltaY;
