@@ -15,9 +15,12 @@ bool RayCasterFloat::IsWall(float rayX, float rayY)
     if (tileX < 0 || tileY < 0 || tileX >= MAP_X - 1 || tileY >= MAP_Y - 1) {
         return true;
     }
-    return g_map[(tileX >> MAP_ELEMENT_SIZE) +
-                 (tileY << (MAP_XS - MAP_ELEMENT_SIZE))] &
-           (1 << (MAP_ELEMENT_MASK - (tileX & MAP_ELEMENT_MASK)));
+
+    return (g_map32[(tileX / OBSTACLES_PER_ELEMENT) +
+                    (tileY * ELEMENTS_PER_ROW)] >>
+            ((OBSTACLES_PER_ELEMENT - tileX % OBSTACLES_PER_ELEMENT) *
+             OBSTACLE_SIZE)) &
+           OBSTACLE_MASK;
 }
 
 float RayCasterFloat::Distance(float playerX,      // In, Player location X
@@ -76,12 +79,13 @@ float RayCasterFloat::Distance(float playerX,      // In, Player location X
                 (tileStepY == -1 && (interceptY >= tileY)))) {
             somethingDone = true;
             tileX += tileStepX;
-            if (IsWall(tileX, interceptY)) {
+            if (*hitDirection = IsWall(tileX, interceptY)) {
                 verticalHit = true;
                 rayX = tileX + (tileStepX == -1 ? 1 : 0);
                 rayY = interceptY;
                 *hitOffset = interceptY;
-                *hitDirection = true;
+                // Use odd number to indicate different hit direction
+                *hitDirection = *hitDirection * 2 + 1;
                 break;
             }
             interceptY += stepY;
@@ -90,12 +94,12 @@ float RayCasterFloat::Distance(float playerX,      // In, Player location X
                                 (tileStepX == -1 && (interceptX >= tileX)))) {
             somethingDone = true;
             tileY += tileStepY;
-            if (IsWall(interceptX, tileY)) {
+            if (*hitDirection = IsWall(interceptX, tileY)) {
                 horizontalHit = true;
                 rayX = interceptX;
                 *hitOffset = interceptX;
-                *hitDirection = 0;
                 rayY = tileY + (tileStepY == -1 ? 1 : 0);
+                *hitDirection *= 2;
                 break;
             }
             interceptX += stepX;

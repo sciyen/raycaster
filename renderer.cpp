@@ -40,7 +40,7 @@ void Renderer::TraceFrame(Game *g, uint32_t *fb)
 
             to += ts;
 
-            if (tn == 1 && tv > 0) {
+            if (tn % 2 == 1 && tv > 0) {
                 // dark wall
                 tv >>= 1;
             }
