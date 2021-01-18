@@ -128,6 +128,7 @@ int main(int argc, char *args[])
                 /* Float point render start */
                 const auto renderFloatTickStart = SDL_GetPerformanceCounter();
                 floatRenderer.TraceFrame(&game, floatBuffer);
+                floatRenderer.RenderGame(&game, floatBuffer);
                 const auto renderFloatTickEnd = SDL_GetPerformanceCounter();
                 const auto floatRenderSeconds =
                     (renderFloatTickEnd - renderFloatTickStart) /
@@ -136,6 +137,7 @@ int main(int argc, char *args[])
                 /* Fixed point render start */
                 const auto renderFixedTickStart = SDL_GetPerformanceCounter();
                 fixedRenderer.TraceFrame(&game, fixedBuffer);
+                fixedRenderer.RenderGame(&game, fixedBuffer);
                 const auto renderFixedTickEnd = SDL_GetPerformanceCounter();
                 const auto fixedRenderSeconds =
                     (renderFixedTickEnd - renderFixedTickStart) /

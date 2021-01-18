@@ -6,6 +6,7 @@
 
 void Game::Move(int m, int r, float seconds)
 {
+    moving = m;
     playerA += 0.05f * r * seconds * 25.0f;
     playerX += 0.5f * m * sin(playerA) * seconds * 5.0f;
     playerY += 0.5f * m * cos(playerA) * seconds * 5.0f;
@@ -31,6 +32,7 @@ void Game::Move(int m, int r, float seconds)
 
 Game::Game()
 {
+    moving = 0;
     playerX = 23.03f;
     playerY = 6.8f;
     playerA = 5.25f;

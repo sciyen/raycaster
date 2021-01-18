@@ -64,3 +64,42 @@ void Renderer::TraceFrame(Game *g, uint32_t *fb)
         }
     }
 }
+
+
+void Renderer::RenderGame(Game *g, uint32_t *fb)
+{
+    static float time = 0, offset = 0;
+    if (g->moving > 0) {
+        time += 0.02f;
+        offset = (10 * (sin(time) + 1));
+    } else {
+        offset *= 0.99f;
+    }
+
+    // rendering hand and gun
+    uint32_t *lb =
+        fb +
+        (SCREEN_HEIGHT - TEXTURE_GUN_SIDE_HEIGHT + (uint8_t) offset) *
+            SCREEN_WIDTH +
+        (SCREEN_WIDTH - TEXTURE_GUN_SIDE_WIDTH);
+    for (int j = 0; j < TEXTURE_GUN_SIDE_HEIGHT - (uint8_t) offset; j++) {
+        for (int i = 0; i < TEXTURE_GUN_SIDE_WIDTH; i++) {
+            auto tv = g_texture_gunside[j * TEXTURE_GUN_SIDE_WIDTH + i];
+
+            if ((tv & 0x8000) == 0)
+                *lb = GetARGB_color(tv);
+            lb++;
+        }
+        lb += SCREEN_WIDTH - TEXTURE_GUN_SIDE_WIDTH;
+    }
+
+    // rendering aiming point
+    lb = fb + (SCREEN_HEIGHT / 2) * SCREEN_WIDTH + (SCREEN_WIDTH / 2);
+    for (int l = 0; l < ARM_POINT_LEN; l++) {
+        uint8_t len = offset + l + ARM_POINT_RAD;
+        *(lb - len * SCREEN_WIDTH) = ARM_POINT_COLOR;
+        *(lb + len * SCREEN_WIDTH) = ARM_POINT_COLOR;
+        *(lb - len) = ARM_POINT_COLOR;
+        *(lb + len) = ARM_POINT_COLOR;
+    }
+}
