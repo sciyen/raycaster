@@ -3,13 +3,27 @@
 
 #include "game.h"
 #include "raycaster.h"
+#include "raycaster_data.h"
 
 void Game::Move(int m, int r, float seconds)
 {
     moving = m;
     playerA += 0.05f * r * seconds * 25.0f;
-    playerX += 0.5f * m * sin(playerA) * seconds * 5.0f;
-    playerY += 0.5f * m * cos(playerA) * seconds * 5.0f;
+
+    float try_move_x = 0.5f * m * sin(playerA) * seconds * 5.0f;
+    float try_move_y = 0.5f * m * cos(playerA) * seconds * 5.0f;
+    int x = playerX + try_move_x;
+    int y = playerY + try_move_y;
+    if (((g_map32[(x / OBSTACLES_PER_ELEMENT) + (y * ELEMENTS_PER_ROW)] >>
+          ((OBSTACLES_PER_ELEMENT - x % OBSTACLES_PER_ELEMENT) *
+           OBSTACLE_SIZE)) &
+         OBSTACLE_MASK) == 0) {
+        playerX += try_move_x;
+        playerY += try_move_y;
+    } else {
+        playerX -= try_move_x;
+        playerY -= try_move_y;
+    }
 
     while (playerA < 0) {
         playerA += 2.0f * M_PI;
