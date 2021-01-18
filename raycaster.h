@@ -22,8 +22,25 @@
 #define LOOKUP8(tbl, offset) tbl[offset]
 #define LOOKUP16(tbl, offset) tbl[offset]
 
+/* Texture Parameter Setting */
 #define TEXTURE_XS 6
 #define TEXTURE_SIZE (uint16_t)(1 << TEXTURE_XS)  // 2^6
+
+// Number of bits to representing a single color channel
+#define TEXTURE_BITS_COLOR 5
+#define NUMBER_OF_GRAY_TEXTURE 1
+
+#define TEXTURE_COLOR_MASK ((1 << TEXTURE_BITS_COLOR) - 1)
+#define TEXTURE_R_MASK (TEXTURE_COLOR_MASK << (TEXTURE_BITS_COLOR * 2))
+#define TEXTURE_G_MASK (TEXTURE_COLOR_MASK << (TEXTURE_BITS_COLOR * 1))
+#define TEXTURE_B_MASK (TEXTURE_COLOR_MASK << (TEXTURE_BITS_COLOR * 0))
+#define TEXTURE_R_OFFSET \
+    (8 * 2 + (8 - TEXTURE_BITS_COLOR) - TEXTURE_BITS_COLOR * 2)
+#define TEXTURE_G_OFFSET \
+    (8 * 1 + (8 - TEXTURE_BITS_COLOR) - TEXTURE_BITS_COLOR * 1)
+#define TEXTURE_B_OFFSET \
+    (8 * 0 + (8 - TEXTURE_BITS_COLOR) - TEXTURE_BITS_COLOR * 0)
+/* End of Texture Parameter Setting */
 
 #define MAP_XS (uint8_t) 5
 // Map x direction size (number of bits)

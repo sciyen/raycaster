@@ -36,15 +36,25 @@ void Renderer::TraceFrame(Game *g, uint32_t *fb)
             // paint texture pixel
             uint16_t ty =
                 (tso + (((TEXTURE_SIZE / 2) << 10) - tso) * y / sso) >> 10;
-            auto tv = g_texture8[(ty << 6) + tx];
 
+            uint16_t tv;
+            if (tn / 2 < NUMBER_OF_GRAY_TEXTURE) {
+                // gray scale texture
+                tv = (g_texture_gray[tn / 2])[(ty << 6) + tx];
+                *lb = GetARGB(tv);
+            } else {
+                // colored texture
+                tv = (g_texture_color[tn / 2 - 1])[(ty << 6) + tx];
+                *lb = GetARGB_color(tv);
+            }
+
+            // View with different direction
+            if (tn % 2 == 1 && *lb > 0) {
+                // dark wall
+                *lb = (*lb & 0xFEFEFE) >> 1;
+            }
             to += ts;
 
-            if (tn % 2 == 1 && tv > 0) {
-                // dark wall
-                tv >>= 1;
-            }
-            *lb = GetARGB(tv);
             lb += SCREEN_WIDTH;
         }
 

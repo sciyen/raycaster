@@ -3,7 +3,7 @@
 #include "raycaster_float.h"
 #include <math.h>
 
-bool RayCasterFloat::IsWall(float rayX, float rayY)
+uint8_t RayCasterFloat::IsWall(float rayX, float rayY)
 {
     float mapX = 0;
     float mapY = 0;
@@ -85,7 +85,7 @@ float RayCasterFloat::Distance(float playerX,      // In, Player location X
                 rayY = interceptY;
                 *hitOffset = interceptY;
                 // Use odd number to indicate different hit direction
-                *hitDirection = *hitDirection * 2 + 1;
+                *hitDirection = (*hitDirection - 1) * 2 + 1;
                 break;
             }
             interceptY += stepY;
@@ -99,7 +99,7 @@ float RayCasterFloat::Distance(float playerX,      // In, Player location X
                 rayX = interceptX;
                 *hitOffset = interceptX;
                 rayY = tileY + (tileStepY == -1 ? 1 : 0);
-                *hitDirection *= 2;
+                *hitDirection = (*hitDirection - 1) * 2;
                 break;
             }
             interceptX += stepX;

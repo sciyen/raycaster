@@ -26,5 +26,5 @@ private:
                    float rayA,
                    float *hitOffset,
                    int *hitDirection);
-    bool IsWall(float rayX, float rayY);
+    uint8_t IsWall(float rayX, float rayY);
 };
