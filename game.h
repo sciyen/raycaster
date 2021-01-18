@@ -13,6 +13,7 @@ class Game
 public:
     PlayerPose pose;
     int moving;
+    int godMode;
     void Move(int m, int r, float seconds);
 
     float playerX, playerY, playerA;

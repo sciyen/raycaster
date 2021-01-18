@@ -48,6 +48,7 @@ Game::Game()
 {
     pose = POSE_STAND;
     moving = 0;
+    godMode = 0;
     playerX = 23.03f;
     playerY = 6.8f;
     playerA = 5.25f;

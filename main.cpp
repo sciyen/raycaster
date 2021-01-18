@@ -61,6 +61,9 @@ static bool ProcessEvent(const SDL_Event &event,
         case SDLK_e:
             game->pose = p ? POSE_SQUAT : POSE_STAND;
             break;
+        case SDLK_g:
+            game->godMode = p ? 1 : 0;
+            break;
         default:
             break;
         }

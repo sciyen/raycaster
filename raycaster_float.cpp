@@ -27,7 +27,8 @@ float RayCasterFloat::Distance(float playerX,      // In, Player location X
                                float playerY,      // In, Player location Y
                                float rayA,         // In, Player location Angle
                                float *hitOffset,   // Out,
-                               int *hitDirection)  // Out,
+                               int *hitDirection,  // Out,
+                               bool keepGoing)     // In
 {
     // Player location angle normalizarion
     while (rayA < 0) {
@@ -39,34 +40,41 @@ float RayCasterFloat::Distance(float playerX,      // In, Player location X
 
     // Split the player location into fractional part(offset) and
     // integer part(tile).
-    float rayX = playerX;
-    float rayY = playerY;
-    float tileX = 0;
-    float tileY = 0;
-    float offsetX = modff(rayX, &tileX);
-    float offsetY = modff(rayY, &tileY);
 
-    float vecX = 1 - offsetY;  // The case that 3pi/2 ~ pi/2
-    float vecY = 1 - offsetX;  // The case that 0 ~ pi
-    int tileStepX = 1;         // The case that 0 ~ pi
-    int tileStepY = 1;         // The case that 3pi/2 ~ pi/2
+    static float rayX = playerX;
+    static float rayY = playerY;
+    static float tileX = 0, tileY = 0, offsetX = 0, offsetY = 0,
+                 startDeltaX = 0, startDeltaY = 0, interceptX = 0,
+                 interceptY = 0;
+    static int tileStepX = 0, tileStepY = 0;
+    if (!keepGoing) {
+        rayX = playerX;
+        rayY = playerY;
+        offsetX = modff(rayX, &tileX);
+        offsetY = modff(rayY, &tileY);
 
-    // Generate directional unit vector according to player angle
-    if (rayA > M_PI) {
-        tileStepX = -1;
-        vecY = (offsetX == 0) ? 1 : offsetX;
+        float vecX = 1 - offsetY;  // The case that 3pi/2 ~ pi/2
+        float vecY = 1 - offsetX;  // The case that 0 ~ pi
+        tileStepX = 1;             // The case that 0 ~ pi
+        tileStepY = 1;             // The case that 3pi/2 ~ pi/2
+
+        // Generate directional unit vector according to player angle
+        if (rayA > M_PI) {
+            tileStepX = -1;
+            vecY = (offsetX == 0) ? 1 : offsetX;
+        }
+        if (rayA > M_PI_2 && rayA < 3 * M_PI_2) {
+            tileStepY = -1;
+            vecX = (offsetY == 0) ? 1 : offsetY;
+        }
+
+        // Calculate the starting delta
+        startDeltaX = vecX * tan(rayA) * tileStepY;
+        startDeltaY = vecY / tan(rayA) * tileStepX;
+
+        interceptX = rayX + startDeltaX;
+        interceptY = rayY + startDeltaY;
     }
-    if (rayA > M_PI_2 && rayA < 3 * M_PI_2) {
-        tileStepY = -1;
-        vecX = (offsetY == 0) ? 1 : offsetY;
-    }
-
-    // Calculate the starting delta
-    float startDeltaX = vecX * tan(rayA) * tileStepY;
-    float startDeltaY = vecY / tan(rayA) * tileStepX;
-
-    float interceptX = rayX + startDeltaX;
-    float interceptY = rayY + startDeltaY;
     float stepX = fabs(tan(rayA)) * tileStepX;
     float stepY = fabs(1 / tan(rayA)) * tileStepY;
     bool verticalHit = false;
@@ -112,6 +120,11 @@ float RayCasterFloat::Distance(float playerX,      // In, Player location X
 
     float deltaX = rayX - playerX;
     float deltaY = rayY - playerY;
+    if (verticalHit)
+        interceptY += stepY;
+    else
+        interceptX += stepX;
+
     return sqrt(deltaX * deltaX + deltaY * deltaY);
 }
 
@@ -122,12 +135,18 @@ void RayCasterFloat::Trace(uint16_t screenX,
                            uint16_t *textureY,
                            uint16_t *textureStep)
 {
+    static uint16_t previousX = UINT16_MAX;
+    bool keepGoing = false;
+    if (screenX == previousX)
+        keepGoing = true;
+    previousX = screenX;
+
     float hitOffset;
     int hitDirection;
     float deltaAngle = atanf(((int16_t) screenX - SCREEN_WIDTH / 2.0f) /
                              (SCREEN_WIDTH / (2.0f * tanf(FOV_X / 2.0f))));
     float lineDistance = Distance(_playerX, _playerY, _playerA + deltaAngle,
-                                  &hitOffset, &hitDirection);
+                                  &hitOffset, &hitDirection, keepGoing);
     float distance = lineDistance * cos(deltaAngle);
     float dum;
     *textureX = (uint8_t)(256.0f * modff(hitOffset, &dum));

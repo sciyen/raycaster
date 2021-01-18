@@ -4,6 +4,8 @@
 #include "raycaster.h"
 #include "raycaster_data.h"
 
+#define DOWN_SCALE(color) (((color) &0xFEFEFE) >> 1)
+
 class Renderer
 {
     RayCaster *_rc;
@@ -25,6 +27,11 @@ class Renderer
     const uint16_t *g_texture_color[2] = {g_texture8_computer, g_texture8_cat};
 
 public:
+    uint16_t RecursiveTraceFrame(uint32_t *fb,
+                                 int x,
+                                 uint16_t up,
+                                 uint16_t down,
+                                 uint8_t offset);
     void TraceFrame(Game *g, uint32_t *frameBuffer);
     void RenderGame(Game *g, uint32_t *frameBuffer);
     Renderer(RayCaster *rc) { _rc = rc; };

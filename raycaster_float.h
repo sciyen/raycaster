@@ -25,6 +25,7 @@ private:
                    float playerY,
                    float rayA,
                    float *hitOffset,
-                   int *hitDirection);
+                   int *hitDirection,
+                   bool keepGoint = false);
     uint8_t IsWall(float rayX, float rayY);
 };
