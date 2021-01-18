@@ -77,26 +77,44 @@ void Renderer::RenderGame(Game *g, uint32_t *fb)
     }
 
     // rendering hand and gun
-    uint32_t *lb =
-        fb +
-        (SCREEN_HEIGHT - TEXTURE_GUN_SIDE_HEIGHT + (uint8_t) offset) *
-            SCREEN_WIDTH +
-        (SCREEN_WIDTH - TEXTURE_GUN_SIDE_WIDTH);
-    for (int j = 0; j < TEXTURE_GUN_SIDE_HEIGHT - (uint8_t) offset; j++) {
-        for (int i = 0; i < TEXTURE_GUN_SIDE_WIDTH; i++) {
-            auto tv = g_texture_gunside[j * TEXTURE_GUN_SIDE_WIDTH + i];
+    if (g->pose == POSE_SQUAT) {
+        const int sx = SCREEN_WIDTH / 2 - TEXTURE_GUN_CENTER_WIDTH / 2 + 1;
+        const int sy = SCREEN_HEIGHT - TEXTURE_GUN_CENTER_HEIGHT;
+        uint32_t *lb = fb + sy * SCREEN_WIDTH + sx;
+        for (int j = 0; j < TEXTURE_GUN_CENTER_HEIGHT; j++) {
+            for (int i = 0; i < TEXTURE_GUN_CENTER_WIDTH; i++) {
+                auto tv =
+                    g_texture_gun_center[j * TEXTURE_GUN_CENTER_WIDTH + i];
 
-            if ((tv & 0x8000) == 0)
-                *lb = GetARGB_color(tv);
-            lb++;
+                if ((tv & 0x8000) == 0)
+                    *lb = GetARGB_color(tv);
+                lb++;
+            }
+            lb += SCREEN_WIDTH - TEXTURE_GUN_SIDE_WIDTH;
         }
-        lb += SCREEN_WIDTH - TEXTURE_GUN_SIDE_WIDTH;
+    } else {
+        uint32_t *lb =
+            fb +
+            (SCREEN_HEIGHT - TEXTURE_GUN_SIDE_HEIGHT + (uint8_t) offset) *
+                SCREEN_WIDTH +
+            (SCREEN_WIDTH - TEXTURE_GUN_SIDE_WIDTH);
+        for (int j = 0; j < TEXTURE_GUN_SIDE_HEIGHT - (uint8_t) offset; j++) {
+            for (int i = 0; i < TEXTURE_GUN_SIDE_WIDTH; i++) {
+                auto tv = g_texture_gun_side[j * TEXTURE_GUN_SIDE_WIDTH + i];
+
+                if ((tv & 0x8000) == 0)
+                    *lb = GetARGB_color(tv);
+                lb++;
+            }
+            lb += SCREEN_WIDTH - TEXTURE_GUN_SIDE_WIDTH;
+        }
     }
 
     // rendering aiming point
-    lb = fb + (SCREEN_HEIGHT / 2) * SCREEN_WIDTH + (SCREEN_WIDTH / 2);
+    uint32_t *lb = fb + (SCREEN_HEIGHT / 2) * SCREEN_WIDTH + (SCREEN_WIDTH / 2);
     for (int l = 0; l < ARM_POINT_LEN; l++) {
-        uint8_t len = offset + l + ARM_POINT_RAD;
+        float stable = (g->pose == POSE_SQUAT ? 0.2f : 1);
+        uint8_t len = offset * stable + l + ARM_POINT_RAD * stable;
         *(lb - len * SCREEN_WIDTH) = ARM_POINT_COLOR;
         *(lb + len * SCREEN_WIDTH) = ARM_POINT_COLOR;
         *(lb - len) = ARM_POINT_COLOR;

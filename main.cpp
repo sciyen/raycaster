@@ -33,7 +33,8 @@ static void DrawBuffer(SDL_Renderer *sdlRenderer,
 
 static bool ProcessEvent(const SDL_Event &event,
                          int *moveDirection,
-                         int *rotateDirection)
+                         int *rotateDirection,
+                         Game *game)
 {
     if (event.type == SDL_QUIT) {
         return true;
@@ -56,6 +57,9 @@ static bool ProcessEvent(const SDL_Event &event,
             break;
         case SDLK_RIGHT:
             *rotateDirection = p ? 1 : 0;
+            break;
+        case SDLK_e:
+            game->pose = p ? POSE_SQUAT : POSE_STAND;
             break;
         default:
             break;
@@ -150,8 +154,8 @@ int main(int argc, char *args[])
                 SDL_RenderPresent(sdlRenderer);
 
                 if (SDL_PollEvent(&event)) {
-                    isExiting =
-                        ProcessEvent(event, &moveDirection, &rotateDirection);
+                    isExiting = ProcessEvent(event, &moveDirection,
+                                             &rotateDirection, &game);
                 }
 
                 /* Calculating the overall performance */

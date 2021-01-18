@@ -32,6 +32,7 @@ void Game::Move(int m, int r, float seconds)
 
 Game::Game()
 {
+    pose = POSE_STAND;
     moving = 0;
     playerX = 23.03f;
     playerY = 6.8f;
